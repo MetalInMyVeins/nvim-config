@@ -293,7 +293,7 @@ require("lazy").setup({
     {
       "3rd/image.nvim",
       opts = {
-        backend = "ueberzug", -- or "ueberzug" etc., based on terminal
+        backend = "ueberzug", -- kitty or "ueberzug" etc., based on terminal
         processor = "magick_cli",
         max_width = 100,
         max_height = 12,
@@ -301,6 +301,16 @@ require("lazy").setup({
         max_width_window_percentage = math.huge,
         window_overlap_clear_enabled = true,
         window_overlap_clear_ft_ignore = { "cmp_menu", "cmp_docs", "" },
+        integrations = {
+          markdown = {
+            enabled = true,
+            clear_in_insert_mode = true,
+            download_remote_images = true,
+            only_render_image_at_cursor = true,
+            only_render_image_at_cursor_mode = "float",
+            filetypes = { "markdown", "vimwiki" },
+          },
+        },
         --[[integrations = {
           markdown = {
             enabled = true,
@@ -332,7 +342,7 @@ require("lazy").setup({
       "GCBallesteros/jupytext.nvim",
       config = true,
       -- Depending on your nvim distro or config you may need to make the loading not lazy
-      -- lazy=false,
+      lazy=false,
     },
   },
   install =
@@ -425,7 +435,20 @@ end, { desc = "Show diagnostics in float" })
 
 
 
+-- Set wrapping to prevent words from being cut mid-word
+vim.opt.wrap = true
+vim.opt.linebreak = true
+vim.opt.showbreak = "↪ "
 
+-- For long lines, j, k navigation doesn't work: they go
+-- through the entire line. This enables navigation by
+-- screen lines.
+-- Normal mode
+vim.keymap.set("n", "j", "gj", { noremap = true })
+vim.keymap.set("n", "k", "gk", { noremap = true })
+-- Visual mode
+vim.keymap.set("v", "j", "gj", { noremap = true })
+vim.keymap.set("v", "k", "gk", { noremap = true })
 
 -- ========================
 -- Plugin Settings
@@ -611,14 +634,38 @@ require("markview").setup({
   -- other markview.nvim options
 })
 
-vim.api.nvim_create_autocmd("User", {
-    pattern = "MarkviewAttach",
-    callback = function (event)
-        --- This will have all the data you need.
-        local data = event.data;
-        vim.print(data);
-    end
+require("markview.extras.checkboxes").setup({
+    --- Default checkbox state(used when adding checkboxes).
+    ---@type string
+    default = "X",
+
+    --- Changes how checkboxes are removed.
+    ---@type
+    ---| "disable" Disables the checkbox.
+    ---| "checkbox" Removes the checkbox.
+    ---| "list_item" Removes the list item markers too.
+    remove_style = "disable",
+
+    --- Various checkbox states.
+    ---
+    --- States are in sets to quickly change between them
+    --- when there are a lot of states.
+    ---@type string[][]
+    states = {
+        { " ", "/", "X" },
+        { "<", ">" },
+        { "?", "!", "*" },
+        { '"' },
+        { "l", "b", "i" },
+        { "S", "I" },
+        { "p", "c" },
+        { "f", "k", "w" },
+        { "u", "d" }
+    }
 })
+
+require("markview.extras.editor").setup();
+require("markview.extras.headings").setup();
 
 
 
@@ -846,13 +893,19 @@ cmp.setup({
   }),
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
-    { name = 'vsnip' }, -- For vsnip users.
-    -- { name = 'luasnip' }, -- For luasnip users.
-    -- { name = 'ultisnips' }, -- For ultisnips users.
-    -- { name = 'snippy' }, -- For snippy users.
-  }, {
-    { name = 'buffer' },
-  })
+    {
+      name = 'path',
+      option = {
+        pathMappings = {
+        ['@'] = '${folder}/src',
+        -- ['/'] = '${folder}/src/public/',
+        -- ['~@'] = '${folder}/src',
+        -- ['/images'] = '${folder}/src/images',
+        -- ['/components'] = '${folder}/src/components',
+        },
+      },
+    },
+  }),
 })
 
 -- To use git you need to install the plugin petertriho/cmp-git and uncomment lines below
@@ -992,36 +1045,42 @@ vim.api.nvim_create_autocmd("FileType", {
 -- nvim-surround ------------------
 require("nvim-surround").setup()
 
+vim.cmd([[
+hi Vert1 guibg=NONE guifg=#5e87ff gui=bold cterm=bold
+hi Vert2 guibg=NONE guifg=#d7875f gui=bold cterm=bold
+]])
 
 
 -- lualine ------------------------
 local custom_gruvbox = require'lualine.themes.gruvbox'
 -- #a89984
+local Vert1 = '#5e87ff'
+local Vert2 = '#d7875f'
 -- Change the background of lualine_c section for normal mode
-custom_gruvbox.normal.a.bg = '#5e87ff'
+custom_gruvbox.normal.a.bg = Vert2
 custom_gruvbox.normal.b.bg = '#303030'
 --custom_gruvbox.normal.c.bg = '#303030'
 custom_gruvbox.normal.c.bg = '#1c1c1c'
 
 --custom_gruvbox.normal.a.fg = '#5e87ff'
-custom_gruvbox.normal.b.fg = '#5e87ff'
-custom_gruvbox.normal.c.fg = '#5e87ff'
+custom_gruvbox.normal.b.fg = Vert2
+custom_gruvbox.normal.c.fg = Vert2
 
-custom_gruvbox.insert.a.bg = '#d7875f'
+custom_gruvbox.insert.a.bg = Vert1
 custom_gruvbox.insert.b.bg = '#303030'
 custom_gruvbox.insert.c.bg = '#1c1c1c'
 
 custom_gruvbox.insert.a.fg = '#1c1c1c'
-custom_gruvbox.insert.b.fg = '#5e87ff'
-custom_gruvbox.insert.c.fg = '#5e87ff'
+custom_gruvbox.insert.b.fg = Vert2
+custom_gruvbox.insert.c.fg = Vert2
 
 custom_gruvbox.visual.a.bg = '#008000'
-custom_gruvbox.visual.b.bg = '#5e87ff'
+custom_gruvbox.visual.b.bg = Vert2
 custom_gruvbox.visual.c.bg = '#1c1c1c'
 
 custom_gruvbox.visual.a.fg = '#1c1c1c'
 custom_gruvbox.visual.b.fg = '#1c1c1c'
-custom_gruvbox.visual.c.fg = '#5e87ff'
+custom_gruvbox.visual.c.fg = Vert2
 
 --custom_gruvbox.inactive.a.bg = ''
 --custom_gruvbox.inactive.b.bg = ''
@@ -1857,7 +1916,11 @@ vim.keymap.set('t', '<C-S>', [[<C-\><C-N>:FloatermToggle<CR>]])
 -- Run script.sh from current directory
 vim.keymap.set('n', '<S-F>', [[:ScriptRun<CR><C-\><C-N>:FloatermToggle<CR>]])
 
-
+-- Insert "# %%" in current line and go to next line
+vim.keymap.set("n", "<S-P>", function()
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.api.nvim_buf_set_lines(0, row - 1, row - 1, false, { "# %%" })
+end, { desc = "Insert '# %%' at current line" })
 
 
 -- ===========================
@@ -1896,16 +1959,17 @@ hi String cterm=bold guifg=SandyBrown
 "hi VertSplit cterm=bold guifg=#ff0000 guibg=#ff0000
 "hi VertSplit guifg=#ff0000 guibg=NONE
 "highlight VertSplit guifg=#ff0000 gui=bold
-hi link WinSeparator Vert4
+hi link WinSeparator Vert2
+hi link VertSplit Vert2
 
 
 " Highlight settings for different modes
 augroup ModeChangeHighlight
   autocmd!
   " Normal mode settings
-  autocmd InsertLeave,ModeChanged *:[^vV\x16]* hi! link WinSeparator Vert1
+  autocmd InsertLeave,ModeChanged *:[^vV\x16]* hi! link WinSeparator Vert2
   " Insert mode settings
-  autocmd InsertEnter,ModeChanged *:i* hi! link WinSeparator Vert2
+  autocmd InsertEnter,ModeChanged *:i* hi! link WinSeparator Vert1
   " Visual mode settings
   autocmd ModeChanged *:[vV\x16]* hi! link WinSeparator Vert5
   " Replace mode settings
