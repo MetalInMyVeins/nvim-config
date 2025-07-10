@@ -435,21 +435,6 @@ end, { desc = "Show diagnostics in float" })
 
 
 
--- Set wrapping to prevent words from being cut mid-word
-vim.opt.wrap = true
-vim.opt.linebreak = true
-vim.opt.showbreak = "↪ "
-
--- For long lines, j, k navigation doesn't work: they go
--- through the entire line. This enables navigation by
--- screen lines.
--- Normal mode
-vim.keymap.set("n", "j", "gj", { noremap = true })
-vim.keymap.set("n", "k", "gk", { noremap = true })
--- Visual mode
-vim.keymap.set("v", "j", "gj", { noremap = true })
-vim.keymap.set("v", "k", "gk", { noremap = true })
-
 -- ========================
 -- Plugin Settings
 -- ========================
@@ -1895,6 +1880,22 @@ vim.keymap.set('i', '<M-h>', '<Left>')
 vim.keymap.set('i', '<M-j>', '<Down>')
 vim.keymap.set('i', '<M-k>', '<Up>')
 vim.keymap.set('i', '<M-l>', '<Right>')
+
+-- Set wrapping to prevent words from being cut mid-word
+vim.opt.wrap = true
+vim.opt.linebreak = true
+vim.opt.showbreak = "↪ "
+
+-- For long lines, j, k navigation doesn't work: they go
+-- through the entire line. This enables navigation by
+-- screen lines.
+-- Normal mode
+vim.keymap.set("n", "j", "gj", { noremap = true })
+vim.keymap.set("n", "k", "gk", { noremap = true })
+-- Visual mode
+vim.keymap.set("v", "j", "gj", { noremap = true })
+vim.keymap.set("v", "k", "gk", { noremap = true })
+
 
 -- Go to end of line and insert (a) mode: Alt+M
 vim.keymap.set('n', '<M-m>', '$a')
