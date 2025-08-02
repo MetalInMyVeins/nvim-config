@@ -102,8 +102,11 @@ require("lazy").setup({
         "nvim-tree/nvim-web-devicons",
       },
     },
-    {
+    --[[{
       "airblade/vim-gitgutter",
+    },--]]
+    {
+      "lewis6991/gitsigns.nvim",
     },
     {
       "OXY2DEV/markview.nvim",
@@ -308,6 +311,7 @@ require("lazy").setup({
             download_remote_images = true,
             only_render_image_at_cursor = true,
             only_render_image_at_cursor_mode = "float",
+            floating_windows = true,
             filetypes = { "markdown", "vimwiki" },
           },
         },
@@ -339,10 +343,92 @@ require("lazy").setup({
       }
     },
     {
-      "GCBallesteros/jupytext.nvim",
-      config = true,
+      "sphamba/smear-cursor.nvim",
+
+      opts =
+      {
+        -- Smear cursor when switching buffers or windows.
+        smear_between_buffers = true,
+
+        -- Smear cursor when moving within line or to neighbor lines.
+        -- Use `min_horizontal_distance_smear` and `min_vertical_distance_smear` for finer control
+        smear_between_neighbor_lines = true,
+
+        -- Draw the smear in buffer space instead of screen space when scrolling
+        scroll_buffer_space = true,
+
+        -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
+        -- Smears will blend better on all backgrounds.
+        legacy_computing_symbols_support = false,
+
+        -- Smear cursor in insert mode.
+        -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
+        smear_insert_mode = true,
+      },
+    },
+    {
+      "karb94/neoscroll.nvim",
+      opts = {},
+    },
+    --[[{
+      "folke/snacks.nvim",
+      priority = 1000,
+      lazy = false,
+      ---@type snacks.Config
+      opts = {
+        -- your configuration comes here
+        -- or leave it empty to use the default settings
+        -- refer to the configuration section below
+        bigfile = { enabled = true },
+        dashboard = { enabled = true },
+        explorer = { enabled = true },
+        indent = { enabled = true },
+        input = { enabled = true },
+        picker = { enabled = true },
+        notifier = { enabled = true },
+        quickfile = { enabled = true },
+        scope = { enabled = true },
+        scroll = { enabled = true },
+        statuscolumn = { enabled = true },
+        words = { enabled = true },
+      },
+    },]]--
+    --[[{
+      'goolord/alpha-nvim',
+      config = function ()
+        require'alpha'.setup(require'alpha.themes.dashboard'.config)
+      end
+    },]]--
+    {
+      "folke/twilight.nvim",
+      opts = {
+        -- your configuration comes here
+        -- or leave it empty to use the default settings
+        -- refer to the configuration section below
+      },
+      config = function()
+        require('twilight').setup({})
+      end
+    },
+    {
+      "eandrju/cellular-automaton.nvim",
+    },
+    {
+      "shellRaining/hlchunk.nvim",
+      event = { "BufReadPre", "BufNewFile" },
+      config = function()
+        require("hlchunk").setup({
+          chunk = {
+            enable = true,
+          },
+        })
+      end
+    },
+    {
+      --"GCBallesteros/jupytext.nvim",
+      --config = true,
       -- Depending on your nvim distro or config you may need to make the loading not lazy
-      lazy=false,
+      --lazy=false,
     },
   },
   install =
@@ -371,7 +457,7 @@ require('config-local').setup{
   lookup_parents = false,     -- Lookup config files in parent directories
 }
 
-require("jupytext").setup({ style = "light" })
+--require("jupytext").setup({ style = "light" })
 
 vim.keymap.set("v", "<leader>r", ":<C-u>MoltenEvaluateVisual<CR>", { desc = "Molten: Run Visual Selection" })
 vim.keymap.set("n", "<leader>c", ":MoltenReevaluateCell<CR>", { desc = "Molten: Evaluate Current Cell" })
@@ -560,15 +646,15 @@ end, { desc = "Focus nvim-tree if open" })
 
 
 -- vim-gitgutter ---------------
-vim.g.gitgutter_enabled = 0
-vim.keymap.set('n', '<leader>g', [[:GitGutterToggle<CR>]])
+--vim.g.gitgutter_enabled = 0
+--vim.keymap.set('n', '<leader>g', [[:GitGutterToggle<CR>]])
 
 
 
 -- treesitter --------------------
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
-  ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "latex", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang" },
+  ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang" },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,
@@ -890,6 +976,7 @@ cmp.setup({
         },
       },
     },
+    { name = 'buffer', },
   }),
 })
 
@@ -1040,7 +1127,9 @@ hi Vert2 guibg=NONE guifg=#d7875f gui=bold cterm=bold
 local custom_gruvbox = require'lualine.themes.gruvbox'
 -- #a89984
 local Vert1 = '#5e87ff'
-local Vert2 = '#d7875f'
+--local Vert2 = '#d7875f'
+--local Vert2 = '#d6453c'
+local Vert2 = '#2f885c'
 -- Change the background of lualine_c section for normal mode
 custom_gruvbox.normal.a.bg = Vert2
 custom_gruvbox.normal.b.bg = '#303030'
@@ -1415,6 +1504,30 @@ vim.api.nvim_set_hl(0, 'IlluminatedWordWrite', { underline = true, bg = '#003300
 vim.cmd([[
 autocmd! BufNewFile,BufRead *.vs,*.fs set ft=glsl
 ]])
+
+
+
+-- neoscroll ---------------------------
+require('neoscroll').setup({
+  mappings = {                 -- Keys to be mapped to their corresponding default scrolling animation
+    '<C-u>', '<C-d>',
+    '<C-b>', '<C-f>',
+    '<C-y>', '<C-e>',
+    'zt', 'zz', 'zb',
+  },
+  hide_cursor = true,          -- Hide cursor while scrolling
+  stop_eof = true,             -- Stop at <EOF> when scrolling downwards
+  respect_scrolloff = false,   -- Stop scrolling when the cursor reaches the scrolloff margin of the file
+  cursor_scrolls_alone = true, -- The cursor will keep on scrolling even if the window cannot scroll further
+  duration_multiplier = 1.0,   -- Global duration multiplier
+  easing = 'linear',           -- Default easing function
+  pre_hook = nil,              -- Function to run before the scrolling animation starts
+  post_hook = nil,             -- Function to run after the scrolling animation ends
+  performance_mode = false,    -- Disable "Performance Mode" on all buffers.
+  ignored_events = {           -- Events ignored while scrolling
+      'WinScrolled', 'CursorMoved'
+  },
+})
 
 
 
@@ -1846,7 +1959,8 @@ imap <C-S> <C-\><C-N>
 nnoremap = $
 nnoremap - ^
 map <leader>s :setlocal spell!<CR>
-map <leader> :wincmd =<CR>
+"map <leader> :wincmd =<CR>
+map <leader>t :Twilight<CR>
 
 map <M-.> :vert res +5<CR>
 map <M-,> :vert res -5<CR>
@@ -1937,7 +2051,9 @@ hi Custom4 cterm=bold guifg=Gold3
 hi Custom5 cterm=bold guibg=#ff0000
 hi Vert1 guibg=NONE guifg=#5e87ff gui=bold cterm=bold
 "hi Vert2 guibg=NONE guifg=#00ff87
-hi Vert2 guibg=NONE guifg=#d7875f gui=bold cterm=bold
+"hi Vert2 guibg=NONE guifg=#d7875f gui=bold cterm=bold
+"hi Vert2 guibg=NONE guifg=#d6453c gui=bold cterm=bold
+hi Vert2 guibg=NONE guifg=#2f885c gui=bold cterm=bold
 hi Vert3 guibg=NONE guifg=#d70056
 hi Vert4 guibg=none guifg=#5e87ff gui=bold cterm=bold
 hi Vert5 guibg=NONE guifg=#008000 gui=bold cterm=bold
