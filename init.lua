@@ -106,7 +106,7 @@ require("lazy").setup({
       "airblade/vim-gitgutter",
     },--]]
     {
-      "lewis6991/gitsigns.nvim",
+      --"lewis6991/gitsigns.nvim",
     },
     {
       "OXY2DEV/markview.nvim",
@@ -342,9 +342,8 @@ require("lazy").setup({
         },--]]
       }
     },
-    {
+    --[[{
       "sphamba/smear-cursor.nvim",
-
       opts =
       {
         -- Smear cursor when switching buffers or windows.
@@ -359,13 +358,20 @@ require("lazy").setup({
 
         -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
         -- Smears will blend better on all backgrounds.
-        legacy_computing_symbols_support = false,
+        legacy_computing_symbols_support = true,
 
         -- Smear cursor in insert mode.
         -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
-        smear_insert_mode = true,
+        smear_insert_mode = false,
       },
-    },
+    },]]--
+    --[[{
+      "echasnovski/mini.nvim",
+      version = '*',
+      config = function()
+        require('mini.animate').setup()
+      end
+    },--]]
     {
       "karb94/neoscroll.nvim",
       opts = {},
@@ -411,7 +417,7 @@ require("lazy").setup({
       end
     },
     {
-      "eandrju/cellular-automaton.nvim",
+      --"eandrju/cellular-automaton.nvim",
     },
     {
       "shellRaining/hlchunk.nvim",
@@ -441,6 +447,13 @@ require("lazy").setup({
   },
 })
 
+
+--[[vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function()
+    require("smear-cursor").enabled = false
+  end,
+})--]]
 
 require('config-local').setup{
   -- Default options (optional)
@@ -1508,7 +1521,7 @@ autocmd! BufNewFile,BufRead *.vs,*.fs set ft=glsl
 
 
 -- neoscroll ---------------------------
-require('neoscroll').setup({
+--[[require('neoscroll').setup({
   mappings = {                 -- Keys to be mapped to their corresponding default scrolling animation
     '<C-u>', '<C-d>',
     '<C-b>', '<C-f>',
@@ -1527,7 +1540,7 @@ require('neoscroll').setup({
   ignored_events = {           -- Events ignored while scrolling
       'WinScrolled', 'CursorMoved'
   },
-})
+})]]--
 
 
 
