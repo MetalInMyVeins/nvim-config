@@ -430,6 +430,20 @@ require("lazy").setup({
         })
       end
     },
+    --[[{
+      "nvimtools/none-ls.nvim",
+      dependencies = { "nvim-lua/plenary.nvim" },
+    },]]--
+    {
+      'windwp/nvim-autopairs',
+      event = "InsertEnter",
+      config = true
+      -- use opts = {} for passing setup options
+      -- this is equivalent to setup({}) function
+    },
+    {
+      "Vimjas/vim-python-pep8-indent",
+    },
     {
       --"GCBallesteros/jupytext.nvim",
       --config = true,
@@ -667,7 +681,7 @@ end, { desc = "Focus nvim-tree if open" })
 -- treesitter --------------------
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
-  ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang" },
+  ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang", "latex" },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,
@@ -1022,6 +1036,16 @@ cmp.setup.cmdline(':', {
   }),
   matching = { disallow_symbol_nonprefix_matching = false }
 })
+
+-- If you want insert `(` after select function or method item
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+local cmp = require('cmp')
+cmp.event:on(
+  'confirm_done',
+  cmp_autopairs.on_confirm_done()
+)
+
+
 
 -- Set up lspconfig.
 --local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -1827,7 +1851,7 @@ set cursorline
 set number
 set tabstop=2 shiftwidth=2 expandtab
 set whichwrap+=<,>,[,]
-autocmd FileType python setlocal shiftwidth=2 tabstop=2 expandtab autoindent
+"autocmd FileType python setlocal shiftwidth=2 tabstop=2 expandtab autoindent
 
 set autoindent
 set smartindent
@@ -1866,7 +1890,7 @@ set wildmenu
 "set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
 
 " Set tab width to 2 spaces for Python files
-autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
+"autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
 autocmd FileType java setlocal ts=2 sts=2 sw=2 expandtab
 autocmd FileType rust setlocal ts=2 sts=2 sw=2 expandtab
 
@@ -2050,6 +2074,37 @@ vim.keymap.set("n", "<S-P>", function()
   vim.api.nvim_buf_set_lines(0, row - 1, row - 1, false, { "# %%" })
 end, { desc = "Insert '# %%' at current line" })
 
+-- Function to handle Shift+Enter in Python files
+local function python_shift_enter()
+  -- Get current line number
+  local current_line = vim.api.nvim_win_get_cursor(0)[1]
+  
+  -- Calculate target lines (n+2 and n+3)
+  local target_line1 = current_line + 2
+  local target_line2 = current_line + 3
+  
+  -- Insert blank lines if needed
+  local line_count = vim.api.nvim_buf_line_count(0)
+  if target_line2 > line_count then
+    local lines_to_add = target_line2 - line_count
+    vim.api.nvim_buf_set_lines(0, line_count, line_count, false, vim.fn["repeat"]({""}, lines_to_add))
+  end
+  
+  -- Insert # %% in n+2 line
+  vim.api.nvim_buf_set_lines(0, target_line1 - 1, target_line1 - 1, false, {"# %%"})
+  
+  -- Move cursor to n+3 line and enter insert mode
+  vim.api.nvim_win_set_cursor(0, {target_line2, 0})
+  vim.cmd("startinsert")
+end
+
+-- Set up the keymap for Python files
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function()
+    vim.keymap.set("i", "<S-CR>", python_shift_enter, { buffer = true })
+  end
+})
 
 -- ===========================
 -- Highlights
