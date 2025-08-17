@@ -444,12 +444,6 @@ require("lazy").setup({
     {
       "Vimjas/vim-python-pep8-indent",
     },
-    {
-      --"GCBallesteros/jupytext.nvim",
-      --config = true,
-      -- Depending on your nvim distro or config you may need to make the loading not lazy
-      --lazy=false,
-    },
   },
   install =
   {
@@ -460,6 +454,8 @@ require("lazy").setup({
     enabled = true,
   },
 })
+
+
 
 
 --[[vim.api.nvim_create_autocmd("FileType", {
@@ -488,6 +484,9 @@ require('config-local').setup{
 
 vim.keymap.set("v", "<leader>r", ":<C-u>MoltenEvaluateVisual<CR>", { desc = "Molten: Run Visual Selection" })
 vim.keymap.set("n", "<leader>c", ":MoltenReevaluateCell<CR>", { desc = "Molten: Evaluate Current Cell" })
+
+
+
 -- ============================
 -- Global Options
 -- ============================
@@ -548,6 +547,92 @@ end, { desc = "Show diagnostics in float" })
 
 
 
+-- Number python cells correctly when saving python files
+--[[vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.py",
+  callback = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    local new_lines = {}
+    local cell_count = 1
+
+    for i, line in ipairs(lines) do
+      local trimmed = vim.trim(line)
+      if trimmed:match("^# %%%%") then
+        -- Replace line with numbered cell marker
+        new_lines[i] = "# %% [" .. cell_count .. "]"
+        cell_count = cell_count + 1
+      else
+        new_lines[i] = line
+      end
+    end
+
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, new_lines)
+  end,
+})]]--
+
+
+
+-- :Pycell, Number python cells manually by running :Pycell
+vim.api.nvim_create_user_command("Pycell", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local filetype = vim.bo[bufnr].filetype
+  if filetype ~= "python" then
+    print("This command only works on Python files.")
+    return
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local new_lines = {}
+  local cell_count = 1
+
+  for i, line in ipairs(lines) do
+    local trimmed = vim.trim(line)
+    if trimmed:match("^# %%%%") then
+      new_lines[i] = "# %% [" .. cell_count .. "]"
+      cell_count = cell_count + 1
+    else
+      new_lines[i] = line
+    end
+  end
+
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, new_lines)
+  print("Updated " .. (cell_count - 1) .. " cells.")
+end, { desc = "Renumber Python cells marked with # %%" })
+
+
+-- Send python cell to tmux denoted by `# %% [<n>]`
+-- Usage:
+-- :SendCell <n>
+-- Dependency:
+-- ~/.bin/sendcell
+-- tmux session should be started by:
+-- tmux new -s py
+vim.api.nvim_create_user_command('SendCell', function(opts)
+  local file = vim.fn.expand('%')
+  local cmd = string.format("sendcell %s %s", file, opts.args)
+  vim.cmd("!" .. cmd)
+end, { nargs = 1 })
+
+
+
+-- Awesome Tab-out feature!
+-- nvim-autopairs provides autocompletion of braces and quotes
+-- Going past the closing braces or quotes is a pain with arrows
+-- This enables going past them pressing Tab
+vim.keymap.set("i", "<Tab>", function()
+  local col = vim.fn.col(".")
+  local line = vim.fn.getline(".")
+  local next_char = line:sub(col, col)
+  if next_char:match("[%]%)}'\"]") then
+    return "<Right>"
+  else
+    return "<Tab>"
+  end
+end, { expr = true, noremap = true })
+
+
+
 -- ========================
 -- Plugin Settings
 -- ========================
@@ -567,6 +652,8 @@ let g:NERDTreeShowHidden=1
 
 
 
+
+
 -- nerdtree-git --------------
 --[[vim.cmd([[
 let g:NERDTreeGitStatusIndicatorMapCustom = {
@@ -582,6 +669,8 @@ let g:NERDTreeGitStatusIndicatorMapCustom = {
                 \ 'Unknown'   :'?',
                 \ }
 ]]--]]
+
+
 
 
 
@@ -672,16 +761,21 @@ vim.keymap.set("n", "W", function()
 end, { desc = "Focus nvim-tree if open" })
 
 
+
+
+
 -- vim-gitgutter ---------------
 --vim.g.gitgutter_enabled = 0
 --vim.keymap.set('n', '<leader>g', [[:GitGutterToggle<CR>]])
 
 
 
+
+
 -- treesitter --------------------
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
-  ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang", "latex" },
+  ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang", "latex", "gitignore" },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,
@@ -720,6 +814,8 @@ require'nvim-treesitter.configs'.setup {
     additional_vim_regex_highlighting = false,
   },
 }
+
+
 
 
 
@@ -767,14 +863,175 @@ require("markview.extras.headings").setup();
 
 
 
+
+
+-- nvim-cmp ---------------------------
+-- Set up nvim-cmp.
+local cmp = require'cmp'
+
+cmp.setup({
+  snippet = {
+    -- REQUIRED - you must specify a snippet engine
+    expand = function(args)
+      vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+      -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+      -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      -- vim.snippet.expand(args.body) -- For native neovim snippets (Neovim v0.10+)
+
+      -- For `mini.snippets` users:
+      -- local insert = MiniSnippets.config.expand.insert or MiniSnippets.default_insert
+      -- insert({ body = args.body }) -- Insert at cursor
+      -- cmp.resubscribe({ "TextChangedI", "TextChangedP" })
+      -- require("cmp.config").set_onetime({ sources = {} })
+    end,
+  },
+  window = {
+    -- completion = cmp.config.window.bordered(),
+    -- documentation = cmp.config.window.bordered(),
+  },
+  mapping = cmp.mapping.preset.insert({
+    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    --['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+
+    ['<CR>'] = cmp.mapping(function(fallback)
+      if cmp.visible() and cmp.get_selected_entry() then
+        cmp.confirm({ select = false })
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+  }),
+  sources = cmp.config.sources({
+    { name = 'nvim_lsp' },
+    {
+      name = 'path',
+      option = {
+        pathMappings = {
+        ['@'] = '${folder}/src',
+        -- ['/'] = '${folder}/src/public/',
+        -- ['~@'] = '${folder}/src',
+        -- ['/images'] = '${folder}/src/images',
+        -- ['/components'] = '${folder}/src/components',
+        },
+      },
+    },
+    { name = 'buffer', },
+  }),
+})
+
+-- To use git you need to install the plugin petertriho/cmp-git and uncomment lines below
+-- Set configuration for specific filetype.
+--[[ cmp.setup.filetype('gitcommit', {
+  sources = cmp.config.sources({
+    { name = 'git' },
+  }, {
+    { name = 'buffer' },
+  })
+})
+require("cmp_git").setup()--]]
+
+-- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline({ '/', '?' }, {
+  mapping = cmp.mapping.preset.cmdline(),
+  sources = {
+    { name = 'buffer' }
+  }
+})
+
+-- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline(':', {
+  mapping = cmp.mapping.preset.cmdline(),
+  sources = cmp.config.sources({
+    { name = 'path' }
+  }, {
+    { name = 'cmdline' }
+  }),
+  matching = { disallow_symbol_nonprefix_matching = false }
+})
+
+-- If you want insert `(` after select function or method item
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+local cmp = require('cmp')
+cmp.event:on(
+  'confirm_done',
+  cmp_autopairs.on_confirm_done()
+)
+
+
+-- Set up lspconfig.
+--local capabilities = require('cmp_nvim_lsp').default_capabilities()
+-- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
+--require('lspconfig')['basedpyright'].setup {
+--  capabilities = capabilities
+--}
+--require('lspconfig')['clangd'].setup {
+--  capabilities = capabilities
+--}
+
+-- nvim-cmp Tab completion
+--local cmp = require'cmp'
+
+--[[cmp.setup({
+  mapping = {
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+
+    ['<CR>'] = cmp.mapping(function(fallback)
+      if cmp.visible() and cmp.get_selected_entry() then
+        cmp.confirm({ select = false })
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+  }
+})--]]
+
+
+
+
+
 -- nvim-lspconfig ---------------------
 vim.lsp.enable('basedpyright')
 
-
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 vim.lsp.enable('clangd')
 vim.lsp.config('clangd', {
-  cmd = { "clangd", "--clang-tidy=false" },
+  cmd = { "clangd", "--clang-tidy=false", "--header-insertion=never", "--completion-style=detailed", "--all-scopes-completion" },
+  capabilities = capabilities,
 })
+
 
 vim.lsp.enable('r_language_server')
 
@@ -896,9 +1153,11 @@ vim.lsp.config('lua_ls', {
 })
 
 
--- basedpyright -----------------------
+-- basedpyright
 --local lspconfig = require("lspconfig")
 --lspconfig.basedpyright.setup{}
+
+
 
 
 
@@ -933,160 +1192,6 @@ vim.keymap.set("i", "<C-E>", function()
 end, { desc = "Close floating windows" })
 
 
-
--- nvim-cmp ---------------------------
--- Set up nvim-cmp.
-local cmp = require'cmp'
-
-cmp.setup({
-  snippet = {
-    -- REQUIRED - you must specify a snippet engine
-    expand = function(args)
-      vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-      -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-      -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-      -- vim.snippet.expand(args.body) -- For native neovim snippets (Neovim v0.10+)
-
-      -- For `mini.snippets` users:
-      -- local insert = MiniSnippets.config.expand.insert or MiniSnippets.default_insert
-      -- insert({ body = args.body }) -- Insert at cursor
-      -- cmp.resubscribe({ "TextChangedI", "TextChangedP" })
-      -- require("cmp.config").set_onetime({ sources = {} })
-    end,
-  },
-  window = {
-    -- completion = cmp.config.window.bordered(),
-    -- documentation = cmp.config.window.bordered(),
-  },
-  mapping = cmp.mapping.preset.insert({
-    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-e>'] = cmp.mapping.close(),
-    --['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-
-    ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-
-    ['<CR>'] = cmp.mapping(function(fallback)
-      if cmp.visible() and cmp.get_selected_entry() then
-        cmp.confirm({ select = false })
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-  }),
-  sources = cmp.config.sources({
-    { name = 'nvim_lsp' },
-    {
-      name = 'path',
-      option = {
-        pathMappings = {
-        ['@'] = '${folder}/src',
-        -- ['/'] = '${folder}/src/public/',
-        -- ['~@'] = '${folder}/src',
-        -- ['/images'] = '${folder}/src/images',
-        -- ['/components'] = '${folder}/src/components',
-        },
-      },
-    },
-    { name = 'buffer', },
-  }),
-})
-
--- To use git you need to install the plugin petertriho/cmp-git and uncomment lines below
--- Set configuration for specific filetype.
---[[ cmp.setup.filetype('gitcommit', {
-  sources = cmp.config.sources({
-    { name = 'git' },
-  }, {
-    { name = 'buffer' },
-  })
-})
-require("cmp_git").setup()--]]
-
--- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline({ '/', '?' }, {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = {
-    { name = 'buffer' }
-  }
-})
-
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources({
-    { name = 'path' }
-  }, {
-    { name = 'cmdline' }
-  }),
-  matching = { disallow_symbol_nonprefix_matching = false }
-})
-
--- If you want insert `(` after select function or method item
-local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-local cmp = require('cmp')
-cmp.event:on(
-  'confirm_done',
-  cmp_autopairs.on_confirm_done()
-)
-
-
-
--- Set up lspconfig.
---local capabilities = require('cmp_nvim_lsp').default_capabilities()
--- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
---require('lspconfig')['basedpyright'].setup {
---  capabilities = capabilities
---}
---require('lspconfig')['clangd'].setup {
---  capabilities = capabilities
---}
-
--- nvim-cmp Tab completion
---local cmp = require'cmp'
-
---[[cmp.setup({
-  mapping = {
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-
-    ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-
-    ['<CR>'] = cmp.mapping(function(fallback)
-      if cmp.visible() and cmp.get_selected_entry() then
-        cmp.confirm({ select = false })
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-  }
-})--]]
 
 
 
@@ -1146,8 +1251,12 @@ vim.api.nvim_create_autocmd("FileType", {
 
 
 
+
+
 -- scrollbar ----------------------
 --require("scrollbar").setup()
+
+
 
 
 
@@ -1158,6 +1267,9 @@ vim.cmd([[
 hi Vert1 guibg=NONE guifg=#5e87ff gui=bold cterm=bold
 hi Vert2 guibg=NONE guifg=#d7875f gui=bold cterm=bold
 ]])
+
+
+
 
 
 -- lualine ------------------------
@@ -1309,6 +1421,8 @@ require('lualine').setup({
 
 
 
+
+
 -- sniprun -------------------
 require'sniprun'.setup({
   snipruncolors = {
@@ -1396,6 +1510,8 @@ vim.api.nvim_set_keymap('n', '<F5>', ':lua b_caret = vim.fn.winsaveview()<CR>:%S
 
 
 
+
+
 -- molten.nvim ----------------------------------
 vim.keymap.set("n", "<localleader>mi", ":MoltenInit python<CR>",
     { silent = true, desc = "Initialize the plugin" })
@@ -1410,6 +1526,10 @@ vim.keymap.set("v", "<localleader>r", ":<C-u>MoltenEvaluateVisual<CR>gv",
 
 vim.api.nvim_set_keymap('n', '<C-P>', [[:lua SelectPythonCell()<CR><ESC>:MoltenEvaluateVisual<CR>:lua GotoLine()<CR>]], { silent = true })
 vim.api.nvim_set_keymap('n', '<leader>p', [[:MoltenEnterOutput<CR>]], { silent = true })
+
+
+
+
 
 -- image.nvim -------------------------------
 --[[require("image").setup({
@@ -1453,6 +1573,9 @@ vim.api.nvim_set_keymap('n', '<leader>p', [[:MoltenEnterOutput<CR>]], { silent =
 --]]
 
 
+
+
+
 -- noice ---------------------------
 require("noice").setup({
   lsp = {
@@ -1472,6 +1595,8 @@ require("noice").setup({
     lsp_doc_border = true, -- add a border to hover docs and signature help
   },
 })
+
+
 
 
 
@@ -1511,6 +1636,8 @@ vim.keymap.set('n', '<leader>h', [[:Telescope notify<CR>]])
 
 
 
+
+
 -- notify --------------------
 require("notify").setup({
   background_colour = "#1e1e2e", -- or any solid background you prefer
@@ -1518,10 +1645,14 @@ require("notify").setup({
 
 
 
+
+
 -- lazydev -------------------
 require("lazydev").setup({
   library = { "nvim-dap-ui" },
 })
+
+
 
 
 
@@ -1537,10 +1668,14 @@ vim.api.nvim_set_hl(0, 'IlluminatedWordWrite', { underline = true, bg = '#003300
 
 
 
+
+
 -- vim-glsl ----------------------------
 vim.cmd([[
 autocmd! BufNewFile,BufRead *.vs,*.fs set ft=glsl
 ]])
+
+
 
 
 
@@ -1568,6 +1703,8 @@ autocmd! BufNewFile,BufRead *.vs,*.fs set ft=glsl
 
 
 
+
+
 -- nvim-dap ------------------
 local dap = require("dap")
 dap.adapters.gdb = {
@@ -1575,6 +1712,8 @@ dap.adapters.gdb = {
   command = "gdb",
   args = { "--interpreter=dap", "--eval-command", "set print pretty on" }
 }
+
+
 
 
 
@@ -1608,6 +1747,8 @@ vim.keymap.set('n', '<F8>', function() require('dap').step_over() end)
 vim.keymap.set('n', '<F9>', function() require('dap').step_into() end)
 vim.keymap.set('n', '<F10>', function() require('dap').step_out() end)
 vim.keymap.set('n', '<Leader>dr', function() require('dap').repl.open() end)
+
+
 
 
 
