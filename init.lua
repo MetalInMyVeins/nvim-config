@@ -15,6 +15,8 @@
 -- n | <leader>p   | Enter molten output window
 -- n | <leader>0   | Show/enter molten output (noautocmd)
 -- n | <leader>g   | Jump to Python cell by number (custom)
+-- n | ]c          | Jump to next Python cell (custom)
+-- n | [c          | Jump to previous Python cell (custom)
 -- n | <localleader>mi | Initialize Molten (Python kernel)
 -- n | <localleader>e  | Evaluate motion/operator (Molten)
 -- n | <localleader>rl | Evaluate current line (Molten)
@@ -693,6 +695,43 @@ vim.keymap.set("n", "<leader>g", function()
     vim.notify("Invalid number.", vim.log.levels.ERROR)
   end
 end, { desc = "Go to Python cell by number" })
+
+
+
+
+
+-- Navigate between Python cells marked as "# %% ..."
+local function goto_next_cell()
+  local cur_line = vim.fn.line(".")
+  local total_lines = vim.fn.line("$")
+
+  for i = cur_line + 1, total_lines do
+    if vim.fn.getline(i):match("^%s*# %%%%") then
+      vim.api.nvim_win_set_cursor(0, { i, 0 })
+      vim.cmd("normal! zz")
+      vim.notify("Next cell", vim.log.levels.INFO)
+      return
+    end
+  end
+  vim.notify("No next cell found.", vim.log.levels.WARN)
+end
+
+local function goto_prev_cell()
+  local cur_line = vim.fn.line(".")
+
+  for i = cur_line - 1, 1, -1 do
+    if vim.fn.getline(i):match("^%s*# %%%%") then
+      vim.api.nvim_win_set_cursor(0, { i, 0 })
+      vim.cmd("normal! zz")
+      vim.notify("Previous cell", vim.log.levels.INFO)
+      return
+    end
+  end
+  vim.notify("No previous cell found.", vim.log.levels.WARN)
+end
+
+vim.keymap.set("n", "]c", goto_next_cell, { desc = "Go to next Python cell (# %%)" })
+vim.keymap.set("n", "[c", goto_prev_cell, { desc = "Go to previous Python cell (# %%)" })
 
 
 
