@@ -41,7 +41,8 @@
 -- n | <S-Tab>     | Previous tab
 -- n | =           | Go to end of line
 -- n | -           | Go to start of line
--- n | <leader>S   | Toggle spell check
+-- n | <leader>d   | Toggle spell check
+-- n | <leader>s   | Toggle symbol table of current file (outline.nvim)
 -- n | <Alt-M>     | Go to end of line and enter insert mode (a)
 -- n | <Alt-N>     | Go to start of line and enter insert mode (i)
 -- n | <Alt-O>     | Insert line above (o) and go back
@@ -473,6 +474,17 @@ require("lazy").setup({
         { "<leader>=", "<cmd>lua require('nvim-window').pick()<cr>", desc = "nvim-window: Jump to window" },
       },
       config = true,
+    },
+    {
+      "hedyhli/outline.nvim",
+      config = function()
+        -- Example mapping to toggle outline
+        vim.keymap.set("n", "<leader>o", "<cmd>Outline<CR>", { desc = "Toggle Outline" })
+
+        require("outline").setup {
+        -- Your setup opts here (leave empty to use defaults)
+        }
+      end,
     },
     --[[{
       'goerz/jupytext.nvim',
@@ -1829,6 +1841,13 @@ vim.api.nvim_set_hl(0, 'IlluminatedWordWrite', { underline = true, bg = '#003300
 
 
 
+-- outline -------------------
+vim.keymap.set('n', '<leader>s', [[:Outline<CR>]])
+
+
+
+
+
 -- vim-glsl ----------------------------
 vim.cmd([[
 autocmd! BufNewFile,BufRead *.vs,*.fs set ft=glsl
@@ -2244,7 +2263,8 @@ imap <C-S> <C-\><C-N>
 
 nnoremap = $
 nnoremap - ^
-map <leader>s :setlocal spell!<CR>
+" Toggle spell check
+map <leader>d :setlocal spell!<CR>
 "map <leader> :wincmd =<CR>
 map <leader>t :Twilight<CR>
 
