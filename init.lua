@@ -1,47 +1,70 @@
 -- ==========================
 -- Keymap Logs
 -- ==========================
--- n | <leader>; | Open diagnostic window of offending line when cursor is on it
--- n | <S-M> | Open nvim-tree
--- n | <S-W> | Take cursor in the nvim-tree window (if any)
--- n | <leader>g | Toggle gitgutter
--- n | <leader>' | Open docs of current object under cursor
--- n | <F5> | Call :SnipRun on entire file
--- n | <C-K> | Send current block (# %%) to :SnipRun
--- n | <leader>q | Close :SnipRun
--- n | <leader>h | View notification history
--- n | <C-D> | Save file
--- i | <C-D> | Save file
--- n | <C-E> | Close signature help menu
--- n | <C-A> | Select all
--- i | <C-A> | Select all
--- n | <C-L> | Safely exit vim by handling all open buffers and windows
--- n | <C-Q> | Force exit current file
--- n | <S-Q> | Next tab
--- n | <S-Tab> | Previous tab
--- n | <leader>[ | Create new tab with nvim-tree
--- n | <leader>] | Close current tab
--- n | <C-P> | Run src/main.py in floaterm
--- n | <S-T> | Launch floaterm
--- t | <ESC><ESC> | Enter normal mode in floaterm
+-- n | <leader>;   | Show diagnostics in floating window
+-- n | <S-M>       | Open nvim-tree
+-- n | W           | Focus nvim-tree if open
+-- n | <leader>[   | Create new tab with nvim-tree
+-- n | <leader>]   | Close current tab
+-- n | <leader>'   | Show LSP hover documentation (lspsaga)
+-- n | <leader>q   | Close SnipRun window
+-- n | <leader>h   | View notification history (telescope)
+-- n | <leader>-   | Number Python cells (# %%)
+-- n | <leader>c   | Evaluate current Python cell (Molten)
+-- n | <leader>r   | Run selected Python code block (Molten)
+-- n | <leader>p   | Enter molten output window
+-- n | <leader>0   | Show/enter molten output (noautocmd)
+-- n | <leader>g   | Jump to Python cell by number (custom)
+-- n | <localleader>mi | Initialize Molten (Python kernel)
+-- n | <localleader>e  | Evaluate motion/operator (Molten)
+-- n | <localleader>rl | Evaluate current line (Molten)
+-- n | <localleader>rr | Re-evaluate current cell (Molten)
+-- v | <localleader>r  | Evaluate visual selection (Molten)
+-- n | <F5>        | Run entire file with SnipRun
+-- n | <C-K>       | Run current Python cell (# %%) with SnipRun
+-- n | <C-P>       | Run current Python cell with Molten
+-- n | <leader>\   | Toggle floaterm
+-- n | <S-T>       | Launch floaterm
+-- n | <C-S>       | Enter normal mode
+-- t | <C-S>       | Toggle floaterm
+-- t | <ESC><ESC>  | Enter normal mode in floaterm
 -- t | <leader><BS> | Enter normal mode in floaterm
--- n | <leader>\ | Toggle floaterm
--- t | <C-S> | Toggle floaterm
--- n | <C-S> | Enter normal mode
--- n | = | Go to end of line
--- n | - | Go to start of line
--- n | <leader>S | Toggle spell check
+-- n | <C-D>       | Save file
+-- i | <C-D>       | Save file
+-- n | <C-A>       | Select all
+-- i | <C-A>       | Select all
+-- n | <C-L>       | Safe exit Vim (handles unsaved buffers)
+-- n | <C-Q>       | Force quit current file
+-- n | <S-Q>       | Next tab
+-- n | <S-Tab>     | Previous tab
+-- n | =           | Go to end of line
+-- n | -           | Go to start of line
+-- n | <leader>S   | Toggle spell check
+-- n | <Alt-M>     | Go to end of line and enter insert mode (a)
+-- n | <Alt-N>     | Go to start of line and enter insert mode (i)
+-- n | <Alt-O>     | Insert line above (o) and go back
+-- i | <Alt-[>     | Exit insert mode
+-- i | <Alt-H>     | Move left in insert mode
+-- i | <Alt-J>     | Move down in insert mode
+-- i | <Alt-K>     | Move up in insert mode
+-- i | <Alt-L>     | Move right in insert mode
+-- i | <Tab>       | Jump past closing brace/quote if possible
+-- n | <leader>=   | Jump to specific window (nvim-window)
+-- n | <F12>       | Toggle breakpoint (DAP)
+-- n | <F11>       | Continue debugging (DAP)
+-- n | <F8>        | Step over (DAP)
+-- n | <F9>        | Step into (DAP)
+-- n | <F10>       | Step out (DAP)
+-- n | <leader>dr  | Open DAP REPL
 --
--- i | <Alt-H> | Go left in insert mode
--- i | <Alt-J> | Go down in insert mode
--- i | <Alt-K> | Go up in insert mode
--- i | <Alt-L> | Go right in insert mode
+-- t | j           | Scroll 3 lines down in floaterm
+-- t | k           | Scroll 3 lines up in floaterm
 --
--- n | <Alt-M> | Go to end of line and enter insert (a) mode
--- n | <Alt-N> | Go to start of line and enter insert (i) mode
--- i | <Alt-[> | Go to normal mode conveniently
--- n | <Alt-O> | Go to insert (o) mode and go back to the previous line
---
+-- Notes:
+-- - <leader> = "\"
+-- - <localleader> = "\"
+-- - :SendCell <n> sends a specific Python cell to tmux (custom command)
+-- - :Pycell renumbers all Python cells marked with # %%
 
 
 
@@ -243,21 +266,9 @@ require("lazy").setup({
         },
       },
     },
-    {
+    --[[{
       'mfussenegger/nvim-dap-python',
-    },
-    {
-      'rmagatti/auto-session',
-      lazy = false,
-
-      -- enables autocomplete for opts
-      -- @module "auto-session"
-      -- @type AutoSession.Config
-      opts = {
-        suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
-        -- log_level = 'debug',
-      }
-    },
+    },]]--
     {
       'klen/nvim-config-local',
     },
@@ -444,6 +455,34 @@ require("lazy").setup({
     {
       "Vimjas/vim-python-pep8-indent",
     },
+    {
+      "numToStr/Comment.nvim",
+      opts = {
+        -- add any options here
+      },
+      config = function()
+        require("Comment").setup({
+        })
+      end
+    },
+    {
+      "yorickpeterse/nvim-window",
+      keys = {
+        { "<leader>=", "<cmd>lua require('nvim-window').pick()<cr>", desc = "nvim-window: Jump to window" },
+      },
+      config = true,
+    },
+    --[[{
+      'goerz/jupytext.nvim',
+      version = '0.2.0',
+      opts = {},  -- see Options
+    },
+    {
+      "GCBallesteros/jupytext.nvim",
+      config = true,
+     --Depending on your nvim distro or config you may need to make the loading not lazy
+     --lazy=false,
+    },]]--
   },
   install =
   {
@@ -480,7 +519,18 @@ require('config-local').setup{
   lookup_parents = false,     -- Lookup config files in parent directories
 }
 
---require("jupytext").setup({ style = "light" })
+--[[require("jupytext").setup({
+  style = "hydrogen",
+  output_extension = "auto",  -- Default extension. Don't change unless you know what you are doing
+  force_ft = nil,  -- Default filetype. Don't change unless you know what you are doing
+  custom_language_formatting = {
+    python = {
+      extension = "md",
+      style = "markdown",
+      force_ft = "markdown", -- you can set whatever filetype you want here
+    },
+  },
+})]]--
 
 vim.keymap.set("v", "<leader>r", ":<C-u>MoltenEvaluateVisual<CR>", { desc = "Molten: Run Visual Selection" })
 vim.keymap.set("n", "<leader>c", ":MoltenReevaluateCell<CR>", { desc = "Molten: Evaluate Current Cell" })
@@ -599,6 +649,53 @@ vim.api.nvim_create_user_command("Pycell", function()
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, new_lines)
   print("Updated " .. (cell_count - 1) .. " cells.")
 end, { desc = "Renumber Python cells marked with # %%" })
+
+vim.keymap.set("n", "<leader>-", ":Pycell<CR>:w<CR>", { desc = "Number python cells" })
+
+
+
+
+
+-- Jump to Python cell by number
+function GotoPythonCell(num)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+  for i, line in ipairs(lines) do
+    if line:match("^# %%%% %[(" .. num .. ")%]") then
+      vim.api.nvim_win_set_cursor(0, { i, 0 })
+      vim.cmd("normal! zz")  -- center cursor
+      vim.notify("Jumped to cell " .. num, vim.log.levels.INFO)
+      return
+    end
+  end
+
+  vim.notify("Cell " .. num .. " not found.", vim.log.levels.WARN)
+end
+
+-- Command: :GotoCell 3
+vim.api.nvim_create_user_command("GotoCell", function(opts)
+  local num = tonumber(opts.args)
+  if not num then
+    vim.notify("Usage: :GotoCell <number>", vim.log.levels.ERROR)
+    return
+  end
+  GotoPythonCell(num)
+end, { nargs = 1 })
+
+-- Optional keymap: <leader>g then enter cell number
+vim.keymap.set("n", "<leader>g", function()
+  local input = vim.fn.input("Cell number: ")
+  local num = tonumber(input)
+  if num then
+    GotoPythonCell(num)
+  else
+    vim.notify("Invalid number.", vim.log.levels.ERROR)
+  end
+end, { desc = "Go to Python cell by number" })
+
+
+
 
 
 -- Send python cell to tmux denoted by `# %% [<n>]`
@@ -1533,8 +1630,6 @@ vim.api.nvim_set_keymap('n', '<F5>', ':lua b_caret = vim.fn.winsaveview()<CR>:%S
 
 
 
-
-
 -- molten.nvim ----------------------------------
 vim.keymap.set("n", "<localleader>mi", ":MoltenInit python<CR>",
     { silent = true, desc = "Initialize the plugin" })
@@ -1549,7 +1644,8 @@ vim.keymap.set("v", "<localleader>r", ":<C-u>MoltenEvaluateVisual<CR>gv",
 
 vim.api.nvim_set_keymap('n', '<C-P>', [[:lua SelectPythonCell()<CR><ESC>:MoltenEvaluateVisual<CR>:lua GotoLine()<CR>]], { silent = true })
 vim.api.nvim_set_keymap('n', '<leader>p', [[:MoltenEnterOutput<CR>]], { silent = true })
-
+-- Enter cursor in molten output window
+vim.keymap.set("n", "<leader>0", ":noautocmd MoltenEnterOutput<CR>", { silent = true, desc = "show/enter output" })
 
 
 
@@ -1624,6 +1720,7 @@ require("noice").setup({
 
 
 -- telescope ----------------------
+--require('telescope').load_extension("persisted")
 require('telescope').setup{
   defaults = {
     -- Default configuration for telescope goes here:
@@ -1741,7 +1838,7 @@ dap.adapters.gdb = {
 
 
 -- dap-python -----------------
-require("dap-python").setup("python3")
+--require("dap-python").setup("python3")
 -- If using the above, then `python3 -m debugpy --version`
 -- must work in the shell
 
@@ -1771,59 +1868,6 @@ vim.keymap.set('n', '<F9>', function() require('dap').step_into() end)
 vim.keymap.set('n', '<F10>', function() require('dap').step_out() end)
 vim.keymap.set('n', '<Leader>dr', function() require('dap').repl.open() end)
 
-
-
-
-
--- auto-session -----------------
-require("auto-session").setup(
-{
-  enabled = false, -- Enables/disables auto creating, saving and restoring
-  root_dir = vim.fn.stdpath "data" .. "/sessions/", -- Root dir where sessions will be stored
-  auto_save = false, -- Enables/disables auto saving session on exit
-  auto_restore = false, -- Enables/disables auto restoring session on start
-  auto_create = false, -- Enables/disables auto creating new session files. Can take a function that should return true/false if a new session file should be created or not
-  suppressed_dirs = nil, -- Suppress session restore/create in certain directories
-  allowed_dirs = nil, -- Allow session restore/create in certain directories
-  auto_restore_last_session = false, -- On startup, loads the last saved session if session for cwd does not exist
-  git_use_branch_name = false, -- Include git branch name in session name
-  git_auto_restore_on_branch_change = false, -- Should we auto-restore the session when the git branch changes. Requires git_use_branch_name
-  lazy_support = true, -- Automatically detect if Lazy.nvim is being used and wait until Lazy is done to make sure session is restored correctly. Does nothing if Lazy isn't being used. Can be disabled if a problem is suspected or for debugging
-  bypass_save_filetypes = nil, -- List of filetypes to bypass auto save when the only buffer open is one of the file types listed, useful to ignore dashboards
-  close_unsupported_windows = true, -- Close windows that aren't backed by normal file before autosaving a session
-  args_allow_single_directory = true, -- Follow normal sesion save/load logic if launched with a single directory as the only argument
-  args_allow_files_auto_save = false, -- Allow saving a session even when launched with a file argument (or multiple files/dirs). It does not load any existing session first. While you can just set this to true, you probably want to set it to a function that decides when to save a session when launched with file args. See documentation for more detail
-  continue_restore_on_error = true, -- Keep loading the session even if there's an error
-  show_auto_restore_notif = false, -- Whether to show a notification when auto-restoring
-  cwd_change_handling = false, -- Follow cwd changes, saving a session before change and restoring after
-  lsp_stop_on_restore = false, -- Should language servers be stopped when restoring a session. Can also be a function that will be called if set. Not called on autorestore from startup
-  restore_error_handler = nil, -- Called when there's an error restoring. By default, it ignores fold errors otherwise it displays the error and returns false to disable auto_save
-  purge_after_minutes = nil, -- Sessions older than purge_after_minutes will be deleted asynchronously on startup, e.g. set to 14400 to delete sessions that haven't been accessed for more than 10 days, defaults to off (no purging), requires >= nvim 0.10
-  log_level = "error", -- Sets the log level of the plugin (debug, info, warn, error).
-
-  session_lens = {
-    load_on_setup = true, -- Initialize on startup (requires Telescope)
-    theme_conf = { -- Pass through for Telescope theme options
-      -- layout_config = { -- As one example, can change width/height of picker
-      --   width = 0.8,    -- percent of window
-      --   height = 0.5,
-      -- },
-    },
-    previewer = false, -- File preview for session picker
-
-    mappings = {
-      -- Mode can be a string or a table, e.g. {"i", "n"} for both insert and normal mode
-      delete_session = { "i", "<C-D>" },
-      alternate_session = { "i", "<C-S>" },
-      copy_session = { "i", "<C-Y>" },
-    },
-
-    session_control = {
-      control_dir = vim.fn.stdpath "data" .. "/auto_session/", -- Auto session control dir, for control files, like alternating between two sessions with session-lens
-      control_filename = "session_control.json", -- File name of the session control file
-    },
-  },
-})
 
 
 
@@ -1988,6 +2032,8 @@ endfunction
 -- ===========================
 -- Syntax and Environment
 -- ===========================
+vim.opt.mouse = "a"
+
 vim.cmd([[
 set ttimeout        " time out for key codes
 set ttimeoutlen=0 " wait up to 0ms after Esc for special key
