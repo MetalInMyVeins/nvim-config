@@ -31,6 +31,7 @@
 -- t | <C-S>       | Toggle floaterm
 -- t | <ESC><ESC>  | Enter normal mode in floaterm
 -- t | <leader><BS> | Enter normal mode in floaterm
+-- n | <leader><BS> | Toggle Molten virtual output
 -- n | <C-D>       | Save file
 -- i | <C-D>       | Save file
 -- n | <C-A>       | Select all
@@ -460,6 +461,7 @@ require("lazy").setup({
     },
     {
       "numToStr/Comment.nvim",
+      -- Usage: `gc` for visual block, `gcc` for single line
       opts = {
         -- add any options here
       },
@@ -781,6 +783,8 @@ end, { expr = true, noremap = true })
 
 
 
+
+
 -- ========================
 -- Plugin Settings
 -- ========================
@@ -858,6 +862,10 @@ require("nvim-tree").setup(
   filters =
   {
     dotfiles = false,
+  },
+  git =
+  {
+    ignore = false,
   },
 })
 
@@ -1697,6 +1705,7 @@ vim.api.nvim_set_keymap('n', '<C-P>', [[:lua SelectPythonCell()<CR><ESC>:MoltenE
 vim.api.nvim_set_keymap('n', '<leader>p', [[:MoltenEnterOutput<CR>]], { silent = true })
 -- Enter cursor in molten output window
 vim.keymap.set("n", "<leader>0", ":noautocmd MoltenEnterOutput<CR>", { silent = true, desc = "show/enter output" })
+vim.keymap.set("n", "<leader><BS>", ":MoltenToggleVirtual<CR>", { silent = true, desc = "toggle molten virtual output" })
 
 
 
