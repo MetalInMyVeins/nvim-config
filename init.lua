@@ -379,7 +379,7 @@ require("lazy").setup({
         -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
         smear_insert_mode = false,
       },
-    },]]--
+    },--]]
     --[[{
       "echasnovski/mini.nvim",
       version = '*',
@@ -499,6 +499,13 @@ require("lazy").setup({
      --Depending on your nvim distro or config you may need to make the loading not lazy
      --lazy=false,
     },]]--
+    {
+      "folke/persistence.nvim",
+      event = "BufReadPre", -- this will only start session saving when an actual file was opened
+      opts = {
+        -- add any custom options here
+      }
+    },
   },
   install =
   {
@@ -1615,10 +1622,11 @@ require'sniprun'.setup({
   {
     --"Classic",                    --# display results in the command-line  area
     --"VirtualTextOk",              --# display ok results as virtual text (multiline is shortened)
+    --"VirtualTextErr",
 
-    --"VirtualText",             --# display results as virtual text
+    "VirtualText",             --# display results as virtual text
     --"VirtualLine",             --# display results as virtual lines
-    "TempFloatingWindow",      --# display results in a floating window
+    --"TempFloatingWindow",      --# display results in a floating window
     --"LongTempFloatingWindow",  --# same as above, but only long results. To use with VirtualText[Ok/Err]
     --"Terminal",                --# display results in a vertical split
     "TerminalWithCode",        --# display results and code history in a vertical split
@@ -1934,6 +1942,33 @@ vim.keymap.set('n', '<F8>', function() require('dap').step_over() end)
 vim.keymap.set('n', '<F9>', function() require('dap').step_into() end)
 vim.keymap.set('n', '<F10>', function() require('dap').step_out() end)
 vim.keymap.set('n', '<Leader>dr', function() require('dap').repl.open() end)
+
+
+
+
+
+-- vim-persistence -----------------------
+-- load the session for the current directory
+vim.keymap.set("n", "<leader>qs", function() require("persistence").load() end)
+-- select a session to load
+vim.keymap.set("n", "<leader>qS", function() require("persistence").select() end)
+-- load the last session
+vim.keymap.set("n", "<leader>ql", function() require("persistence").load({ last = true }) end)
+-- stop Persistence => session won't be saved on exit
+vim.keymap.set("n", "<leader>qd", function() require("persistence").stop() end)
+
+-- Reopen nvim-tree in all tabs after restoring a persistence session
+vim.api.nvim_create_autocmd("SessionLoadPost", {
+    callback = function()
+        local api = require("nvim-tree.api")
+
+        -- Iterate through all tabs restored by the session
+        for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+            vim.api.nvim_set_current_tabpage(tab)
+            api.tree.open()
+        end
+    end,
+})
 
 
 
@@ -2414,7 +2449,9 @@ hi Type cterm=bold,italic guifg=DeepSkyBlue4  "005faf
 hi LineNr cterm=none guifg=Grey30
 
 hi Cursor cterm=bold ctermfg=9 guibg=NONE guifg=red
-hi CursorLine gui=none guibg=Grey11 cterm=bold
+"hi CursorLine gui=none guibg=Grey15 cterm=bold
+"hi CursorLine gui=underline,bold guibg=none guisp=#2f885c
+hi CursorLine gui=underline,bold guibg=none guisp=Grey27
 hi CursorLineNr gui=none guifg=Red1 cterm=bold
 hi Include cterm=bold,italic guifg=#a8775f
 hi String cterm=bold guifg=SandyBrown
