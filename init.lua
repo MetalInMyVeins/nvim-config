@@ -129,9 +129,9 @@ require("lazy").setup({
         "nvim-tree/nvim-web-devicons",
       },
     },
-    --[[{
+    {
       "airblade/vim-gitgutter",
-    },--]]
+    },
     {
       --"lewis6991/gitsigns.nvim",
     },
@@ -505,6 +505,13 @@ require("lazy").setup({
       opts = {
         -- add any custom options here
       }
+    },
+    {
+      "natecraddock/sessions.nvim",
+      config = function()
+        require("sessions").setup {
+        }
+      end,
     },
   },
   install =
@@ -928,7 +935,7 @@ end, { desc = "Focus nvim-tree if open" })
 
 
 -- vim-gitgutter ---------------
---vim.g.gitgutter_enabled = 0
+vim.g.gitgutter_enabled = 0
 --vim.keymap.set('n', '<leader>g', [[:GitGutterToggle<CR>]])
 
 
