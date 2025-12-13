@@ -499,18 +499,27 @@ require("lazy").setup({
      --Depending on your nvim distro or config you may need to make the loading not lazy
      --lazy=false,
     },]]--
-    {
-      "folke/persistence.nvim",
-      event = "BufReadPre", -- this will only start session saving when an actual file was opened
-      opts = {
-        -- add any custom options here
-      }
-    },
+    -- {
+    --   "folke/persistence.nvim",
+    --   event = "BufReadPre", -- this will only start session saving when an actual file was opened
+    --   opts = {
+    --     -- add any custom options here
+    --   }
+    -- },
     {
       "natecraddock/sessions.nvim",
       config = function()
         require("sessions").setup {
         }
+      end,
+    },
+    {
+      "skywind3000/vim-keysound",
+      config = function()
+        vim.g.keysound_enable = 0
+        vim.g.keysound_theme = 'typewriter'
+        vim.g.keysound_py_version = 3
+        vim.g.keysound_volume = 1000
       end,
     },
     {
@@ -995,7 +1004,7 @@ end, { desc = "Focus nvim-tree if open" })
 
 -- vim-gitgutter ---------------
 vim.g.gitgutter_enabled = 0
---vim.keymap.set('n', '<leader>g', [[:GitGutterToggle<CR>]])
+vim.keymap.set('n', '<leader>f', [[:GitGutterToggle<CR>]])
 
 
 
@@ -1148,6 +1157,22 @@ vim.lsp.config('fish_lsp',
   filetypes = { "fish" },
   root_markers = { ".git" },
 })
+
+
+
+vim.lsp.enable('rust_analyzer')
+
+vim.lsp.config('rust_analyzer', {
+  capabilities = capabilities,
+  settings = {
+    ['rust-analyzer'] = {
+      cargo = { allFeatures = true },
+      diagnostics = { enable = true },
+      checkOnSave = { command = "clippy" },
+    },
+  },
+})
+
 
 
 --[[vim.lsp.enable('rls')
@@ -2391,6 +2416,10 @@ command! CompileCxx :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; t
 
 command! CompileCxxRun :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; clang++ -std=c++20 -g -Wall -Wextra -Wpedantic -Werror -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter %:p -o vimbin && echo "Running..." && tput setaf 45 && ./vimbin; tput sgr0;'
 
+command! CompileRust :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; cargo build && echo "done"; tput sgr0;'
+
+command! CompileRustRun :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; echo "Running..." && tput setaf 45 && cargo run; tput sgr0;'
+
 command! ScriptRun :FloatermSend bash -c 'bash script.sh $@'
 ]])
 
@@ -2403,6 +2432,10 @@ vim.keymap.set('n', '<S-J>', [[:CompileCxx<CR><C-\><C-N>:FloatermToggle<CR>]])
 -- Compile and run current buffer C++ program in floaterm
 vim.keymap.set('n', '<C-J>', [[:CompileCxxRun<CR><C-\><C-N>:FloatermToggle<CR>]])
 
+-- Compile rust project in floaterm
+vim.keymap.set('n', '<S-H>', [[:CompileRust<CR><C-\><C-N>:FloatermToggle<CR>]])
+-- Run current buffer C++ program in floaterm
+vim.keymap.set('n', '<C-H>', [[:CompileRustRun<CR><C-\><C-N>:FloatermToggle<CR>]])
 
 -- Navigate in insert mode
 -- Alt+h/j/k/l
@@ -2702,6 +2735,46 @@ vim.api.nvim_set_hl(0, "@keyword.import.python", { fg="DeepSkyBlue4", bold=true 
 vim.api.nvim_set_hl(0, "@module.python", { fg="DeepSkyBlue4", bold=true, italic=true })
 vim.api.nvim_set_hl(0, "@variable.python", { fg="DarkSeaGreen4", bold=true })
 vim.api.nvim_set_hl(0, "@lsp.type.variable.python", { fg="DarkSeaGreen4", bold=true })
+
+
+
+-- Rust
+vim.api.nvim_set_hl(0, "@lsp.type.enum.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.enumMember.rust", { fg="#5f00af", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.namespace.rust", { fg="Orange4", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.class.rust", { fg="#a8775f", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.parameter.rust", { fg="Gold3", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.operator.rust", { fg="SteelBlue1", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.variable.rust", { fg="DarkSeaGreen4", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.function.rust", { fg="Green4", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.property.rust", { fg="DarkSeaGreen4", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.method.rust", { fg="Green4", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.type.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@lsp.type.macro.rust", { fg="Purple3", bold=true })
+
+vim.api.nvim_set_hl(0, "@keyword.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@keyword.import.rust", { fg="#a8775f", bold=true, italic=true })
+vim.api.nvim_set_hl(0, "@keyword.modifier.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@keyword.type.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@keyword.repeat.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@keyword.conditional.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@keyword.return.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@keyword.exception.rust", { fg="DeepSkyBlue4", bold=true })
+vim.api.nvim_set_hl(0, "@keyword.directive.rust", { fg="#5f00af", bold=true })
+
+vim.api.nvim_set_hl(0, "@type.builtin.rust", { fg="Aqua", bold=true, italic=true })
+vim.api.nvim_set_hl(0, "@variable.builtin.rust", { fg="SpringGreen1", bold=true, italic=true })
+vim.api.nvim_set_hl(0, "@variable.rust", { fg="DarkSeaGreen4", bold=true })
+vim.api.nvim_set_hl(0, "@operator.rust", { fg="SteelBlue1", bold=true })
+vim.api.nvim_set_hl(0, "@string.rust", { fg="SandyBrown", bold=true })
+vim.api.nvim_set_hl(0, "@function.rust", { fg="Green4", bold=true })
+vim.api.nvim_set_hl(0, "@number.rust", { fg="DarkMagenta", bold=true })
+vim.api.nvim_set_hl(0, "@character.rust", { fg="DarkMagenta", bold=true })
+vim.api.nvim_set_hl(0, "@property.rust", { fg="DarkSeaGreen4", bold=true })
+vim.api.nvim_set_hl(0, "@function.method.rust", { fg="Green4", bold=true })
+vim.api.nvim_set_hl(0, "@punctuation.delimiter.rust", { fg="NvimLightGrey2", bold=true })
+vim.api.nvim_set_hl(0, "@comment.rust", { fg="Grey30", bold=true })
+
 
 
 
