@@ -1087,6 +1087,13 @@ require("markview.extras.headings").setup();
 vim.lsp.enable('basedpyright')
 
 
+vim.lsp.config('asm-lsp', {
+  cmd = { "asm-lsp" },
+  filetypes = { "asm", "nasm", "s", "S" },
+  root_markers = { ".git", ".clangd" },
+})
+vim.lsp.enable('asm-lsp')
+
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 vim.lsp.enable('clangd')
 vim.lsp.config('clangd', {
@@ -2254,15 +2261,15 @@ autocmd BufReadPost *
 
 
 " aarch64 Assembly
-autocmd FileType asm setlocal smartindent
+autocmd FileType asm setlocal smartindent autoindent
 " Automatically set filetype to ARM assembly for .S or .s files
-autocmd BufRead,BufNewFile *.s set filetype=asm
+" autocmd BufRead,BufNewFile *.s set filetype=asm
 
 
 " Set .bangu files to use C++ indentation
-autocmd BufRead,BufNewFile *.bongo set filetype=s
-autocmd BufRead,BufNewFile *.bg set filetype=s
-autocmd BufRead,BufNewFile *.bir set filetype=s
+" autocmd BufRead,BufNewFile *.bongo set filetype=s
+" autocmd BufRead,BufNewFile *.bg set filetype=s
+" autocmd BufRead,BufNewFile *.bir set filetype=s
 
 set wildmode=longest,list
 set wildmenu
