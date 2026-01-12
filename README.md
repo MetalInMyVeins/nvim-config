@@ -1,1 +1,1 @@
-# Welcome to lua sphagetti
+# Welcome to lua sphagetti!
