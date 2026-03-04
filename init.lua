@@ -540,6 +540,9 @@ require("lazy").setup({
       end,
     },
     {
+      'rhysd/vim-llvm',
+    },
+    {
       'isakbm/gitgraph.nvim',
       opts = {
         git_cmd = "git",
@@ -1028,10 +1031,10 @@ vim.keymap.set('n', '<leader>f', [[:GitGutterToggle<CR>]])
 
 
 -- treesitter --------------------
-require'nvim-treesitter'.install { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang", "latex", "gitignore", "asm" }
+require'nvim-treesitter'.install { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "yuck", "scss", "ini", "toml", "hyprlang", "latex", "gitignore", "asm" }
 
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "jsonc", "yuck", "scss", "ini", "toml", "hyprlang", "latex", "gitignore", "asm" },
+  pattern = { "c", "cpp", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python", "html", "typst", "yaml", "r", "java", "kotlin", "csv", "json", "css", "cmake", "rust", "bash", "fish", "regex", "groovy", "yuck", "scss", "ini", "toml", "hyprlang", "latex", "gitignore", "asm" },
   callback = function() vim.treesitter.start() end,
 })
 
@@ -1099,8 +1102,8 @@ vim.lsp.enable('clangd')
 vim.lsp.config('clangd', {
   cmd = {
     "clangd",
-    "--clang-tidy=false",
-    "--header-insertion=never",
+    "--clang-tidy",
+    "--header-insertion=iwyu",
     "--completion-style=detailed",
     "--all-scopes-completion",
     "--include-ineligible-results"
@@ -1769,7 +1772,7 @@ vim.g.molten_auto_close_output = false
 vim.cmd([[
 "nnoremap <F5> :let b:caret = winsaveview()<CR>:%SnipRun<CR>:call winrestview(b:caret)<CR>
 ]])
-vim.api.nvim_set_keymap('n', '<C-K>', [[:lua SelectPythonCell()<CR>:SnipRun<CR>:lua GotoLine()<CR>]], { silent = true })
+--vim.api.nvim_set_keymap('n', '<C-K>', [[:lua SelectPythonCell()<CR>:SnipRun<CR>:lua GotoLine()<CR>]], { silent = true })
 vim.api.nvim_set_keymap('n', '<leader>q', [[:SnipClose<CR>]], { silent = true })
 vim.api.nvim_set_keymap('n', '<F5>', ':lua b_caret = vim.fn.winsaveview()<CR>:%SnipRun<CR>:lua vim.fn.winrestview(b_caret)<CR>', { noremap = true, silent = false })
 
@@ -2399,15 +2402,19 @@ map <M-,> :vert res -5<CR>
 -- Custom Commands
 -- ================
 vim.cmd([[
-command! CompileCxx :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; clang++ -std=c++20 -g -Wall -Wextra -Wpedantic -Werror -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter %:p -o vimbin && echo "done"; tput sgr0;'
+command! CompileCxx :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; clang++ -std=c++23 -g -Wall -Wextra -Wpedantic -Werror -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter %:p -o vimbin && echo "done"; tput sgr0;'
 
-command! CompileCxxRun :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; clang++ -std=c++20 -g -Wall -Wextra -Wpedantic -Werror -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter %:p -o vimbin && echo "Running..." && tput setaf 45 && ./vimbin; tput sgr0;'
+command! CompileCxxRun :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; clang++ -std=c++23 -g -Wall -Wextra -Wpedantic -Werror -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter %:p -o vimbin && echo "Running..." && tput setaf 45 && ./vimbin; tput sgr0;'
 
 command! CompileRust :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; cargo build && echo "done"; tput sgr0;'
 
 command! CompileRustRun :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; echo "Running..." && tput setaf 45 && cargo run; tput sgr0;'
 
 command! ScriptRun :FloatermSend bash -c 'bash script.sh $@'
+
+command! AsmMain :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; clang -Wall -Wextra -Wpedantic -Werror --target=aarch64-linux-gnu %:p -o vimbin && echo "Running..." && tput setaf 45 && rnarm64 ./vimbin'
+
+command! AsmStart :FloatermSend bash -c 'tput setaf 4; echo -n "Compiling "; tput setaf 45; echo -n %; tput setaf 4; echo " ..."; clang -Wall -Wextra -Wpedantic -Werror --target=aarch64-linux-gnu -static %:p -o vimbin && echo "Running..." && tput setaf 45 && rnarm64 ./vimbin; tput sgr0;'
 ]])
 
 
@@ -2420,9 +2427,12 @@ vim.keymap.set('n', '<S-J>', [[:CompileCxx<CR><C-\><C-N>:FloatermToggle<CR>]])
 vim.keymap.set('n', '<C-J>', [[:CompileCxxRun<CR><C-\><C-N>:FloatermToggle<CR>]])
 
 -- Compile rust project in floaterm
-vim.keymap.set('n', '<S-H>', [[:CompileRust<CR><C-\><C-N>:FloatermToggle<CR>]])
+--vim.keymap.set('n', '<S-H>', [[:CompileRust<CR><C-\><C-N>:FloatermToggle<CR>]])
+vim.keymap.set('n', '<S-H>', [[:AsmStart<CR><C-\><C-N>:FloatermToggle<CR>]])
 -- Run current buffer C++ program in floaterm
-vim.keymap.set('n', '<C-H>', [[:CompileRustRun<CR><C-\><C-N>:FloatermToggle<CR>]])
+--vim.keymap.set('n', '<C-H>', [[:CompileRustRun<CR><C-\><C-N>:FloatermToggle<CR>]])
+vim.keymap.set('n', '<C-H>', [[:AsmMain<CR><C-\><C-N>:FloatermToggle<CR>]])
+
 
 -- Navigate in insert mode
 -- Alt+h/j/k/l
@@ -2472,6 +2482,12 @@ vim.keymap.set("n", "<S-P>", function()
   local row = vim.api.nvim_win_get_cursor(0)[1]
   vim.api.nvim_buf_set_lines(0, row - 1, row - 1, false, { "# %%" })
 end, { desc = "Insert '# %%' at current line" })
+
+-- Run NvimTreeRefresh
+vim.keymap.set('n', '<S-R>', [[:NvimTreeRefresh<CR>]])
+
+
+
 
 -- Function to handle Shift+Enter in Python files
 local function python_shift_enter()
@@ -2537,7 +2553,8 @@ hi LineNr cterm=none guifg=Grey30
 hi Cursor cterm=bold ctermfg=9 guibg=NONE guifg=red
 "hi CursorLine gui=none guibg=Grey15 cterm=bold
 "hi CursorLine gui=underline,bold guibg=none guisp=#2f885c
-hi CursorLine gui=underline,bold guibg=none guisp=Grey27
+"hi CursorLine gui=underline,bold guibg=none guisp=Grey27
+hi CursorLine gui=bold guibg=Grey7
 hi CursorLineNr gui=none guifg=Red1 cterm=bold
 hi Include cterm=bold,italic guifg=#a8775f
 hi String cterm=bold guifg=SandyBrown
@@ -2646,6 +2663,7 @@ vim.api.nvim_set_hl(0, "@keyword.exception.cpp", { fg="DeepSkyBlue4", bold=true 
 vim.api.nvim_set_hl(0, "@keyword.directive.cpp", { fg="#5f00af", bold=true })
 
 vim.api.nvim_set_hl(0, "@type.builtin.cpp", { fg="Aqua", bold=true, italic=true })
+vim.api.nvim_set_hl(0, "@type.cpp", { fg="DeepSkyBlue4", bold=true })
 vim.api.nvim_set_hl(0, "@variable.builtin.cpp", { fg="SpringGreen1", bold=true, italic=true })
 vim.api.nvim_set_hl(0, "@variable.cpp", { fg="DarkSeaGreen4", bold=true })
 vim.api.nvim_set_hl(0, "@operator.cpp", { fg="SteelBlue1", bold=true })
