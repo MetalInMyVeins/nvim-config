@@ -108,6 +108,11 @@ end
 
 
 require("lazy").setup({
+  checker =
+  {
+    enabled = true,
+    notify = false,
+  },
   spec =
   {
     {
@@ -327,6 +332,7 @@ require("lazy").setup({
     },
     {
       "3rd/image.nvim",
+      enabled = false,
       opts = {
         backend = "ueberzug", -- kitty or "ueberzug" etc., based on terminal
         processor = "magick_cli",
@@ -374,7 +380,7 @@ require("lazy").setup({
         },--]]
       }
     },
-    --[[{
+    {
       "sphamba/smear-cursor.nvim",
       opts =
       {
@@ -396,7 +402,7 @@ require("lazy").setup({
         -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
         smear_insert_mode = false,
       },
-    },--]]
+    },
     --[[{
       "echasnovski/mini.nvim",
       version = '*',
@@ -660,6 +666,8 @@ vim.keymap.set("n", "<leader>c", ":MoltenReevaluateCell<CR>", { desc = "Molten: 
 -- ============================
 vim.opt.updatetime = 300
 vim.g.python3_host_prog = 'python3'
+vim.opt.visualbell = true
+vim.opt.errorbells = false
 
 -- Diagnostic floating window: wrap text and limit max width
 vim.diagnostic.config({
@@ -1105,8 +1113,8 @@ vim.lsp.config('clangd', {
     "--clang-tidy",
     "--header-insertion=iwyu",
     "--completion-style=detailed",
-    "--all-scopes-completion",
-    "--include-ineligible-results"
+    "--all-scopes-completion"
+    -- "--include-ineligible-results"
   },
   capabilities = capabilities,
 })
@@ -2298,7 +2306,7 @@ augroup java_indent
 augroup END
 
 " Only apply to .txt files
-autocmd BufRead,BufNewFile *.txt call SetupTxtFormat67()
+" autocmd BufRead,BufNewFile *.txt call SetupTxtFormat67()
 " Only apply to .note files
 autocmd BufRead,BufNewFile *.note call SetupTxtFormat163()
 " Autocmd to check file size on BufRead.
