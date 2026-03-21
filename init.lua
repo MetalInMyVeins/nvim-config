@@ -111,7 +111,6 @@ require("lazy").setup({
   checker =
   {
     enabled = true,
-    notify = false,
   },
   spec =
   {
@@ -402,6 +401,8 @@ require("lazy").setup({
         -- Smear cursor in insert mode.
         -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
         smear_insert_mode = false,
+        vertical_bar_cursor_insert_mode = false,
+        distance_stop_animating_vertical_bar = true,
       },
     },
     --[[{
@@ -449,7 +450,10 @@ require("lazy").setup({
         },
         statuscolumn = {
           enabled = false,
-        }
+        },
+        lazygit = {
+          enabled = true,
+        },
         -- your configuration comes here
         -- or leave it empty to use the default settings
         -- refer to the configuration section below
@@ -713,6 +717,7 @@ vim.opt.updatetime = 300
 vim.g.python3_host_prog = 'python3'
 vim.opt.visualbell = true
 vim.opt.errorbells = false
+vim.opt.fillchars = { eob = " " }
 
 -- Diagnostic floating window: wrap text and limit max width
 vim.diagnostic.config({
@@ -1847,7 +1852,7 @@ vim.api.nvim_set_keymap('n', '<C-P>', [[:lua SelectPythonCell()<CR><ESC>:MoltenE
 vim.api.nvim_set_keymap('n', '<leader>p', [[:MoltenEnterOutput<CR>]], { silent = true })
 -- Enter cursor in molten output window
 vim.keymap.set("n", "<leader>0", ":noautocmd MoltenEnterOutput<CR>", { silent = true, desc = "show/enter output" })
-vim.keymap.set("n", "<leader><BS>", ":MoltenToggleVirtual<CR>", { silent = true, desc = "toggle molten virtual output" })
+-- vim.keymap.set("n", "<leader><BS>", ":MoltenToggleVirtual<CR>", { silent = true, desc = "toggle molten virtual output" })
 
 
 
@@ -2264,7 +2269,6 @@ endfunction
 
 
 
-
 -- ===========================
 -- Syntax and Environment
 -- ===========================
@@ -2434,6 +2438,7 @@ map <S-T> <ESC>:LaunchFloaterm<Enter>
 tnoremap <Esc><Esc> <C-\><C-n>
 tnoremap <leader><BS> <C-\><C-n>
 map <leader>\ :FloatermToggle<CR>
+map <leader><BS> :FloatermToggle<CR>lazygit<CR>
 "map <C-B> <ESC><S-T>bdrn<Enter>
 "map <C-B> <ESC>:FloatermToggle<Enter>bdrn<Enter>
 "tnoremap <C-S> <C-\><C-N>:FloatermToggle<CR>
@@ -2841,5 +2846,4 @@ vim.api.nvim_set_hl(0, "@comment.rust", { fg="Grey30", bold=true })
 vim.cmd([[
 autocmd FileType text syntax match BoldAllText /.*/ | highlight BoldAllText cterm=bold gui=bold
 ]])
-
 
