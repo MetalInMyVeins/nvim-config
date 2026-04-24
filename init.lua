@@ -22,7 +22,7 @@
 -- n | <localleader>rl | Evaluate current line (Molten)
 -- n | <localleader>rr | Re-evaluate current cell (Molten)
 -- v | <localleader>r  | Evaluate visual selection (Molten)
--- n | <F5>        | Run entire file with SnipRun
+-- n | <F7>        | Run entire file with SnipRun
 -- n | <C-K>       | Run current Python cell (# %%) with SnipRun
 -- n | <C-P>       | Run current Python cell with Molten
 -- n | <leader>\   | Toggle floaterm
@@ -184,7 +184,7 @@ require("lazy").setup({
       }
     },
     {
-      "DetachHead/basedpyright",
+      --"DetachHead/basedpyright",
     },
     {
       'hrsh7th/cmp-nvim-lsp',
@@ -414,7 +414,10 @@ require("lazy").setup({
     },--]]
     {
       "karb94/neoscroll.nvim",
-      opts = {},
+      opts = {
+        easing = sine,
+        duration_multiplier = 1.0,
+      },
     },
     {
       "folke/snacks.nvim",
@@ -1107,6 +1110,9 @@ require("markview").setup({
   -- other markview.nvim options
 })
 
+vim.api.nvim_set_hl(0, "MarkviewCode", { bg = 0x201810 })
+vim.api.nvim_set_hl(0, "MarkviewCodeInfo", { bg = 0x2e2720 })
+
 require("markview.extras.checkboxes").setup({
     --- Default checkbox state(used when adding checkboxes).
     ---@type string
@@ -1145,7 +1151,7 @@ require("markview.extras.headings").setup();
 
 
 -- nvim-lspconfig ---------------------
-vim.lsp.enable('basedpyright')
+-- vim.lsp.enable('basedpyright')
 
 
 vim.lsp.config('asm-lsp', {
@@ -1828,11 +1834,11 @@ end
 vim.g.molten_auto_open_output = true
 vim.g.molten_auto_close_output = false
 vim.cmd([[
-"nnoremap <F5> :let b:caret = winsaveview()<CR>:%SnipRun<CR>:call winrestview(b:caret)<CR>
+"nnoremap <F7> :let b:caret = winsaveview()<CR>:%SnipRun<CR>:call winrestview(b:caret)<CR>
 ]])
 --vim.api.nvim_set_keymap('n', '<C-K>', [[:lua SelectPythonCell()<CR>:SnipRun<CR>:lua GotoLine()<CR>]], { silent = true })
 vim.api.nvim_set_keymap('n', '<leader>q', [[:SnipClose<CR>]], { silent = true })
-vim.api.nvim_set_keymap('n', '<F5>', ':lua b_caret = vim.fn.winsaveview()<CR>:%SnipRun<CR>:lua vim.fn.winrestview(b_caret)<CR>', { noremap = true, silent = false })
+vim.api.nvim_set_keymap('n', '<F7>', ':lua b_caret = vim.fn.winsaveview()<CR>:%SnipRun<CR>:lua vim.fn.winrestview(b_caret)<CR>', { noremap = true, silent = false })
 
 
 
@@ -2424,6 +2430,7 @@ endfunction
 autocmd QuitPre * FloatermKill!
 
 command Fmt :%!astyle --mode=c --style=allman -s2
+command Cmt :!clang-format -i %:p && echo >> %:p
 
 command LaunchFloaterm :FloatermNew --height=0.9 --width=0.77 --wintype=float --name=floaterm1 --title=Floaterm --position=center --autoclose=1
 " Run command under vim statusline.
@@ -2527,6 +2534,11 @@ vim.keymap.set('n', '<M-o>', 'o<Up>')
 
 vim.keymap.set('n', '<C-B>', [[:FloatermSend bdrn<CR><C-\><C-N>:FloatermToggle<CR>]])
 vim.keymap.set('n', '<S-B>', [[:FloatermSend bd<CR><C-\><C-N>:FloatermToggle<CR>]])
+
+vim.keymap.set('n', '<F5>', function()
+  vim.fn.system('bd')
+end)
+
 vim.keymap.set('n', '<C-V>', [[:FloatermSend tput setaf 4 && echo "Running build.sh ...." && tput setaf 0 && bash build.sh && tput setaf 4 && echo "done"<CR><C-\><C-N>:FloatermToggle<CR>]])
 
 -- Hide floaterm in terminal mode
