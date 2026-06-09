@@ -2126,12 +2126,12 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.tabstop = 4
     vim.opt_local.shiftwidth = 4
     vim.opt_local.softtabstop = 0  -- was 4
-    vim.opt_local.expandtab = false
+    vim.opt_local.expandtab = true
     vim.opt_local.autoindent = true
 
-    vim.keymap.set("i", "<C-Tab>", function()
-      vim.api.nvim_put({ "\t" }, "c", true, true)
-    end, { buffer = true, noremap = true, desc = "Insert literal tab" })
+    -- vim.keymap.set("i", "<C-Tab>", function()
+    --   vim.api.nvim_put({ "\t" }, "c", true, true)
+    -- end, { buffer = true, noremap = true, desc = "Insert literal tab" })
   end,
 })
 
