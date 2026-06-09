@@ -106,7 +106,6 @@ if not vim.o.sessionoptions:match("localoptions") then
   vim.o.sessionoptions = vim.o.sessionoptions .. ",localoptions"
 end
 
-
 require("lazy").setup({
   checker =
   {
@@ -599,6 +598,9 @@ require("lazy").setup({
     },
     {
       'rhysd/vim-llvm',
+    },
+    {
+      'vim-voom/VOoM',
     },
     {
       'isakbm/gitgraph.nvim',
@@ -2115,7 +2117,23 @@ vim.api.nvim_create_autocmd("SessionLoadPost", {
     end,
 })
 
+vim.opt_local.softtabstop = 0
 
+-- Assembly: 4-wide tabs for .asm (NASM) and .s/.S (GAS)
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "asm", "nasm", "gas" },
+  callback = function()
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+    vim.opt_local.softtabstop = 0  -- was 4
+    vim.opt_local.expandtab = false
+    vim.opt_local.autoindent = true
+
+    vim.keymap.set("i", "<C-Tab>", function()
+      vim.api.nvim_put({ "\t" }, "c", true, true)
+    end, { buffer = true, noremap = true, desc = "Insert literal tab" })
+  end,
+})
 
 
 
@@ -2273,6 +2291,21 @@ endfunction
 ]])
 
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "c", "make" },
+  callback = function()
+    local buf = vim.api.nvim_get_current_buf()
+    local path = vim.api.nvim_buf_get_name(buf)
+
+    -- only apply to kernel-related directories
+    if path:match("/kernel/") or path:match("/drivers/") or path:match("/linux/") then
+      vim.opt_local.tabstop = 8
+      vim.opt_local.shiftwidth = 8
+      vim.opt_local.softtabstop = 8
+      vim.opt_local.expandtab = false
+    end
+  end,
+})
 
 
 -- ===========================
@@ -2327,10 +2360,9 @@ autocmd BufReadPost *
 
 
 " aarch64 Assembly
-autocmd FileType asm setlocal smartindent autoindent
+"autocmd FileType asm setlocal smartindent autoindent
 " Automatically set filetype to ARM assembly for .S or .s files
 " autocmd BufRead,BufNewFile *.s set filetype=asm
-
 
 " Set .bangu files to use C++ indentation
 " autocmd BufRead,BufNewFile *.bongo set filetype=s
