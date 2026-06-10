@@ -2117,24 +2117,6 @@ vim.api.nvim_create_autocmd("SessionLoadPost", {
     end,
 })
 
-vim.opt_local.softtabstop = 0
-
--- Assembly: 4-wide tabs for .asm (NASM) and .s/.S (GAS)
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "asm", "nasm", "gas" },
-  callback = function()
-    vim.opt_local.tabstop = 4
-    vim.opt_local.shiftwidth = 4
-    vim.opt_local.softtabstop = 0  -- was 4
-    vim.opt_local.expandtab = true
-    vim.opt_local.autoindent = true
-
-    -- vim.keymap.set("i", "<C-Tab>", function()
-    --   vim.api.nvim_put({ "\t" }, "c", true, true)
-    -- end, { buffer = true, noremap = true, desc = "Insert literal tab" })
-  end,
-})
-
 
 
 
@@ -2291,120 +2273,87 @@ endfunction
 ]])
 
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "c", "make" },
-  callback = function()
-    local buf = vim.api.nvim_get_current_buf()
-    local path = vim.api.nvim_buf_get_name(buf)
 
-    -- only apply to kernel-related directories
-    if path:match("/kernel/") or path:match("/drivers/") or path:match("/linux/") then
-      vim.opt_local.tabstop = 8
-      vim.opt_local.shiftwidth = 8
-      vim.opt_local.softtabstop = 8
-      vim.opt_local.expandtab = false
-    end
+
+
+-- ===========================
+-- Autocmds
+-- ===========================
+vim.api.nvim_create_autocmd({ "BufEnter", "BufNewFile" }, {
+  pattern = { "*.c", "*.h" },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.expandtab = false
+    vim.opt_local.autoindent = true
+    vim.opt_local.smartindent = false
   end,
 })
+
+
+vim.api.nvim_create_autocmd({ "BufEnter", "BufNewFile" }, {
+  pattern = { "*.s", "*.S", "*.asm" },
+  callback = function()
+    vim.opt_local.tabstop = 8
+    vim.opt_local.shiftwidth = 8
+    vim.opt_local.softtabstop = 8
+    vim.opt_local.expandtab = false
+    vim.opt_local.autoindent = true
+    vim.opt_local.smartindent = false
+  end,
+})
+
+
 
 
 -- ===========================
 -- Syntax and Environment
 -- ===========================
-vim.opt.mouse = "a"
 
-vim.cmd([[
-set ttimeout        " time out for key codes
-set ttimeoutlen=0 " wait up to 0ms after Esc for special key
+-- Cursor shapes per mode (insert, replace, normal)
+vim.opt.ttimeout    = true
+vim.opt.ttimeoutlen = 0
 
-" Change cursor shape in different modes.
-let &t_SI = "\<Esc>[6 q"
-let &t_SR = "\<Esc>[4 q"
-let &t_EI = "\<Esc>[2 q"
+vim.opt.mouse       = "a"
+vim.opt.showmatch   = true
+vim.opt.cursorline  = true
+vim.opt.number      = true
+vim.opt.tabstop     = 2
+vim.opt.shiftwidth  = 2
+vim.opt.softtabstop = 2
+vim.opt.expandtab   = false
+vim.opt.autoindent  = true
+vim.opt.smartindent = false
+vim.opt.clipboard   = "unnamedplus"
+vim.opt.showcmd     = true
+vim.opt.encoding    = "utf-8"
+vim.opt.wildmode    = { "longest", "list" }
+vim.opt.wildmenu    = true
 
-" From Nvim 0.10.0, they changed the default colorscheme and
-" made termguicolors enabled by default. So I had to override
-" these here.
-"colorscheme vim
-"set notermguicolors
+vim.opt.whichwrap:append("<,>,[,]")
 
-set mouse=a
+-- Cursor shape: beam in insert, underline in replace, block in normal
+vim.opt.guicursor = "n-v-c:block,i-ci-ve:ver25,r-cr:hor20"
 
-syntax on
+-- MatchParen highlight
+vim.api.nvim_set_hl(0, "MatchParen", {
+  bold      = true,
+  underline = true,
+  ctermbg   = "black",
+  ctermfg   = "green",
+})
 
-set showmatch
-hi MatchParen cterm=bold,underline ctermbg=black ctermfg=green
-
-set cursorline
-
-set number
-set tabstop=2 shiftwidth=2 expandtab
-set whichwrap+=<,>,[,]
-"autocmd FileType python setlocal shiftwidth=2 tabstop=2 expandtab autoindent
-
-set autoindent
-set smartindent
-
-set clipboard=unnamedplus
-
-" show commands in lower right screen
-set showcmd
-
-set encoding=utf-8
-
-" Return to last edit position when opening files
-autocmd BufReadPost *
-  \ if line("'\"") > 0 && line("'\"") <= line("$") |
-  \   exe "normal! g`\"" |
-  \ endif
-
-
-" aarch64 Assembly
-"autocmd FileType asm setlocal smartindent autoindent
-" Automatically set filetype to ARM assembly for .S or .s files
-" autocmd BufRead,BufNewFile *.s set filetype=asm
-
-" Set .bangu files to use C++ indentation
-" autocmd BufRead,BufNewFile *.bongo set filetype=s
-" autocmd BufRead,BufNewFile *.bg set filetype=s
-" autocmd BufRead,BufNewFile *.bir set filetype=s
-
-set wildmode=longest,list
-set wildmenu
-" Keep cursor line vertically centered
-"set scrolloff=999
-
-" Turn on neovim session management
-"set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
-
-" Set tab width to 2 spaces for Python files
-"autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
-autocmd FileType java setlocal ts=2 sts=2 sw=2 expandtab
-autocmd FileType rust setlocal ts=2 sts=2 sw=2 expandtab
-
-augroup python_indent
-  autocmd! * <buffer>
-  autocmd BufEnter,BufNewFile *.py setlocal tabstop=4 shiftwidth=4 softtabstop=4 expandtab
-augroup END
-
-augroup java_indent
-  autocmd! * <buffer>
-  autocmd BufEnter,BufNewFile *.java setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
-augroup END
-
-" Only apply to .txt files
-" autocmd BufRead,BufNewFile *.txt call SetupTxtFormat67()
-" Only apply to .note files
-autocmd BufRead,BufNewFile *.note call SetupTxtFormat163()
-" Autocmd to check file size on BufRead.
-" Don't open file larger than 100 MiB
-autocmd BufReadPre * if !FileSizeLimit(150) | q | endif
-]])
-
-
-
-
-
+-- Return to last edit position when opening a file
+vim.api.nvim_create_autocmd("BufReadPost", {
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local line_count = vim.api.nvim_buf_line_count(0)
+    if mark[1] > 0 and mark[1] <= line_count then
+      vim.api.nvim_win_set_cursor(0, mark)
+    end
+  end,
+})
 
 
 
@@ -2462,7 +2411,8 @@ endfunction
 autocmd QuitPre * FloatermKill!
 
 command Fmt :%!astyle --mode=c --style=allman -s2
-command Cmt :!clang-format -i %:p && echo >> %:p
+"command Cmt :!clang-format -i %:p && echo >> %:p
+command Cmt :!clang-format -i %:p
 
 command LaunchFloaterm :FloatermNew --height=0.9 --width=0.77 --wintype=float --name=floaterm1 --title=Floaterm --position=center --autoclose=1
 " Run command under vim statusline.
@@ -2622,6 +2572,9 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.keymap.set("i", "<S-CR>", python_shift_enter, { buffer = true })
   end
 })
+
+
+
 
 -- ===========================
 -- Highlights
